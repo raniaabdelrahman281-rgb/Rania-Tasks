@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Users</title>
+  <style>
+    table, th, td { border: 1px solid #000; border-collapse: collapse; padding: 5px; }
+    .button { margin: 2px; padding: 3px 6px; }
+    #details-view { display: none; }
+  </style>
+</head>
+<body>
+
+  <div id="main-view">
+    <table>
+      <thead>
+        <tr><th>ID</th><th>Name</th><th>Address</th><th>Company</th><th>Actions</th></tr>
+      </thead>
+      <tbody id="tdata"></tbody>
+    </table>
+  </div>
+
+  <div id="details-view">
+    <button id="back-btn">Back</button>
+    <div id="details-content"></div>
+  </div>
+
+  <script>
+        var tableBody = document.getElementById("tdata");
+    var mainView = document.getElementById("main-view");
+    var detailsView = document.getElementById("details-view");
+    var detailsContent = document.getElementById("details-content");
+    var backBtn = document.getElementById("back-btn");
+
+    var API_URL = "https://jsonplaceholder.typicode.com/users";
+
+    function showView(viewId) {
+        mainView.style.display = 'none';
+        detailsView.style.display = 'none';
+        if (viewId === 'main') {
+            mainView.style.display = 'block';
+        } else if (viewId === 'details') {
+            detailsView.style.display = 'block';
+        }
+    }
+
+    function renderUserTable(users) {
+        tableBody.innerHTML = '';
+        users.forEach(user => {
+            var tableRow = document.createElement("tr");
+            tableRow.id = `user-row-${user.id}`;
+            
+            var userId = document.createElement("td");
+            userId.innerText = user.id;
+
+            var userName = document.createElement("td");
+            userName.innerText = user.name;
+
+            var userAddress = document.createElement("td");
+            userAddress.innerText = `city: ${user.address.city}, street: ${user.address.street}`;
+
+            var userCompany = document.createElement("td");
+            userCompany.className = "text-blue";
+            userCompany.innerText = user.company.name;
+            userCompany.onclick = () => showCompanyDetails(user.company);
+
+            var tdBtns = document.createElement("td");
+            
+            var btnShow = document.createElement("button");
+            btnShow.innerText = "Show Details";
+            btnShow.className = "button button-show";
+            btnShow.onclick = () => showUserDetails(user);
+
+            var btnDelete = document.createElement("button");
+            btnDelete.innerText = "Delete";
+            btnDelete.className = "button button-delete";
+            btnDelete.onclick = () => deleteUserRow(user.id);
+            
+            tdBtns.append(btnShow, btnDelete);
+            tableRow.append(userId, userName, userAddress, userCompany, tdBtns);
+            tableBody.append(tableRow);
+        });
+    }
+
+    async function fetchUsers() {
+        try {
+            var response = await fetch(API_URL);
+            var users = await response.json();
+            renderUserTable(users);
+        } catch (error) {
+            console.error("Failed to fetch users:", error);
+            var messageBox = document.createElement('div');
+            messageBox.style.cssText = `
+                position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                background-color: white; padding: 20px; border-radius: 8px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 1000;
+            `;
+            messageBox.innerHTML = `
+                <p>Could not load users. Please check your network connection.</p>
+                <button onclick="this.parentElement.remove()">OK</button>
+            `;
+            document.body.appendChild(messageBox);
+        }
+    }
+
+    function showUserDetails(user) {
+        let content = `
+            <h2>User Details</h2>
+            <ul>
+                <li><strong>ID:</strong> ${user.id}</li>
+                <li><strong>Name:</strong> ${user.name}</li>
+                <li><strong>Username:</strong> ${user.username}</li>
+                <li><strong>Email:</strong> ${user.email}</li>
+                <li><strong>Phone:</strong> ${user.phone}</li>
+                <li><strong>Website:</strong> <a href="http://${user.website}" class="text-blue">${user.website}</a></li>
+                <li><strong>Address:</strong>
+                    <ul>
+                        <li><strong>Street:</strong> ${user.address.street}</li>
+                        <li><strong>Suite:</strong> ${user.address.suite}</li>
+                        <li><strong>City:</strong> ${user.address.city}</li>
+                        <li><strong>Zipcode:</strong> ${user.address.zipcode}</li>
+                    </ul>
+                </li>
+            </ul>
+        `;
+        detailsContent.innerHTML = content;
+        showView('details');
+    }
+
+    function showCompanyDetails(company) {
+        let content = `
+            <h2>Company Details</h2>
+            <ul>
+                <li><strong>Name:</strong> ${company.name}</li>
+                <li><strong>Catch Phrase:</strong> ${company.catchPhrase}</li>
+                <li><strong>Business Service:</strong> ${company.bs}</li>
+            </ul>
+        `;
+        detailsContent.innerHTML = content;
+        showView('details');
+    }
+
+    function deleteUserRow(userId) {
+        var row = document.getElementById(`user-row-${userId}`);
+        if (row) {
+            row.remove();
+        }
+    }
+
+    backBtn.onclick = () => {
+        showView('main');
+    };
+
+    fetchUsers();
+  </script>
+
+</body>
+</html>

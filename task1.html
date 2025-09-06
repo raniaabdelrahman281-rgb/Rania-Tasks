@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Simple Store</title>
+</head>
+<body>
+
+  <input id="search-box" placeholder="Search..." />
+  <button id="purchase-counter">Purchased: 0 items</button>
+
+  <div id="products-container"></div>
+
+  <div id="myModal" style="display:none;">
+    <h3>Purchased Items:</h3>
+    <div id="purchased-items-list"></div>
+    <button onclick="document.getElementById('myModal').style.display='none'">Close</button>
+  </div>
+
+  <script>
+    let products = [
+    {
+        title: "Bread Basket",
+        description: "Assortment of fresh baked fruit breads and muffins.",
+        image: "Bread.jpg",
+        price: 6.54
+    },
+    {
+        title: "Belgian Waffle",
+        description: "Vanilla flavored home with mashed flour.",
+        image: "Waffle.jpg",
+        price: 9.32
+    },
+    {
+        title: "Scrambled eggs",
+        description: "Scrambled-eggs, roasted-red-pepper and garlic-with-green-beans.",
+        image: "Eggs.jpg",
+        price: 8.12
+    },
+    {
+        title: "Bread Basket",
+        description: "Assortment of fresh baked fruit breads and muffins.",
+        image: "Bread.jpg",
+        price: 6.54
+    },
+    {
+        title: "Belgian Waffle",
+        description: "Vanilla flavored home with mashed flour.",
+        image: "Waffle.jpg",
+        price: 9.32
+    },
+    {
+        title: "Scrambled eggs",
+        description: "Scrambled-eggs, roasted-red-pepper and garlic-with-green-beans.",
+        image: "Eggs.jpg",
+        price: 8.12
+    },
+];
+
+let productsContainer = document.getElementById("products-container");
+let searchBox = document.getElementById("search-box");
+let purchaseCounter = document.getElementById("purchase-counter");
+let modal = document.getElementById("myModal");
+let purchasedItemsList = document.getElementById("purchased-items-list");
+
+let purchasedItems = [];
+let totalItemsCount = 0;
+
+function displayProducts(productsArray) {
+    productsContainer.innerHTML = "";
+    for (let i = 0; i < productsArray.length; i++) {
+        let productCard = document.createElement("div");
+        productCard.classList.add("product-card");
+
+        let image = document.createElement("img");
+        image.src = productsArray[i].image;
+        image.alt = productsArray[i].title;
+
+        let title = document.createElement("h3");
+        title.innerText = productsArray[i].title;
+
+        let description = document.createElement("p");
+        description.innerText = productsArray[i].description;
+        
+        let price = document.createElement("p");
+        price.classList.add("price");
+        price.innerText =  productsArray[i].price;
+
+        let buyButton = document.createElement("button");
+        buyButton.innerText = "Buy";
+        
+        buyButton.onclick = function() {
+            handlePurchase(productsArray[i]);
+        };
+
+        productCard.appendChild(image);
+        productCard.appendChild(title);
+        productCard.appendChild(description);
+        productCard.appendChild(price);
+        productCard.appendChild(buyButton);
+
+        productsContainer.appendChild(productCard);
+    }
+}
+
+function handlePurchase(product) {
+    let itemFound = false;
+    for (let i = 0; i < purchasedItems.length; i++) {
+        if (purchasedItems[i].title === product.title) {
+            purchasedItems[i].count = purchasedItems[i].count + 1;
+            itemFound = true;
+            break;
+        }
+    }
+
+    if (!itemFound) {
+        let newPurchasedItem = {};
+        newPurchasedItem.title = product.title;
+        newPurchasedItem.price = product.price;
+        newPurchasedItem.count = 1;
+        
+        let newArrayLength = purchasedItems.length + 1;
+        let tempArray = [];
+        for (let i = 0; i < purchasedItems.length; i++) {
+            tempArray[i] = purchasedItems[i];
+        }
+        tempArray[newArrayLength - 1] = newPurchasedItem;
+        purchasedItems = tempArray;
+    }
+
+    totalItemsCount = totalItemsCount + 1;
+    purchaseCounter.innerText = "Purchased: " + totalItemsCount + " items";
+}
+
+function showPurchasedItems() {
+    purchasedItemsList.innerHTML = "";
+    if (purchasedItems.length > 0) {
+        let totalPrice = 0;
+        for (let i = 0; i < purchasedItems.length; i++) {
+            let item = purchasedItems[i];
+            let itemDiv = document.createElement("div");
+            let itemTotalPrice = item.price * item.count;
+            totalPrice = totalPrice + itemTotalPrice;
+            itemDiv.innerText = item.title + " (x" + item.count + ") - " + itemTotalPrice;
+            purchasedItemsList.appendChild(itemDiv);
+        }
+        let totalDiv = document.createElement("div");
+        totalDiv.innerText = "Total Price: " + totalPrice;
+        totalDiv.style.fontWeight = "bold";
+        purchasedItemsList.appendChild(totalDiv);
+    } else {
+        let p = document.createElement("p");
+        p.innerText = "No items purchased yet.";
+        purchasedItemsList.appendChild(p);
+    }
+    modal.style.display = "block";
+}
+
+function filterProducts() {
+    let searchValue = searchBox.value.toLowerCase();
+    let filteredProducts = [];
+    for (let i = 0; i < products.length; i++) {
+        let productTitle = products[i].title.toLowerCase();
+        let productDescription = products[i].description.toLowerCase();
+        if (productTitle.includes(searchValue) || productDescription.includes(searchValue)) {
+            let newArrayLength = filteredProducts.length + 1;
+            filteredProducts[newArrayLength - 1] = products[i];
+        }
+    }
+    displayProducts(filteredProducts);
+}
+
+
+searchBox.oninput = filterProducts;
+purchaseCounter.onclick = showPurchasedItems;
+
+
+displayProducts(products);
+  </script>
+
+</body>
+</html>
